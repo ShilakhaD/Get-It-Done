@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="A calm, tile-based weekly roadmap for planning your most important work."
+    />
+    <title>Weekflow | Weekly Roadmap</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="app-header">
+        <div>
+          <p class="eyebrow">Your weekly compass</p>
+          <h1>Weekflow</h1>
+          <p class="subtitle">Shape a week that feels clear, useful, and yours.</p>
+        </div>
+        <div class="header-actions">
+          <button class="button button-secondary" id="reset-week" type="button">
+            Reset week
+          </button>
+          <button class="button button-primary" id="add-task" type="button">
+            <span aria-hidden="true">+</span> Add task
+          </button>
+        </div>
+      </header>
+
+      <section class="week-overview" aria-labelledby="overview-title">
+        <div>
+          <p class="section-label" id="overview-title">This week</p>
+          <p class="week-range" id="week-range"></p>
+        </div>
+        <div class="overview-progress">
+          <div class="progress-copy">
+            <span>Weekly progress</span>
+            <strong id="weekly-count">0 of 0</strong>
+          </div>
+          <div class="progress-track">
+            <span id="weekly-progress"></span>
+          </div>
+        </div>
+      </section>
+
+      <section class="roadmap-grid" id="roadmap-grid" aria-label="Weekly task roadmap"></section>
+    </main>
+
+    <dialog class="task-dialog" id="task-dialog">
+      <form method="dialog" id="task-form">
+        <div class="dialog-heading">
+          <div>
+            <p class="eyebrow">Roadmap item</p>
+            <h2 id="dialog-title">Add a task</h2>
+          </div>
+          <button class="icon-button" id="close-dialog" type="button" aria-label="Close">
+            &times;
+          </button>
+        </div>
+
+        <label>
+          Task name
+          <input id="task-name" name="name" type="text" maxlength="80" required />
+        </label>
+        <div class="form-row">
+          <label>
+            Day
+            <select id="task-day" name="day"></select>
+          </label>
+          <label>
+            Priority
+            <select id="task-priority" name="priority">
+              <option value="high">High</option>
+              <option value="medium" selected>Medium</option>
+              <option value="low">Low</option>
+            </select>
+          </label>
+        </div>
+        <label>
+          Note <span class="optional">(optional)</span>
+          <textarea
+            id="task-note"
+            name="note"
+            maxlength="140"
+            rows="3"
+            placeholder="A little context for future you"
+          ></textarea>
+        </label>
+
+        <div class="dialog-actions">
+          <button class="button button-danger is-hidden" id="delete-task" type="button">
+            Delete
+          </button>
+          <div>
+            <button class="button button-secondary" id="cancel-task" type="button">
+              Cancel
+            </button>
+            <button class="button button-primary" type="submit">Save task</button>
+          </div>
+        </div>
+      </form>
+    </dialog>
+
+    <template id="day-card-template">
+      <article class="day-card">
+        <header class="day-heading">
+          <div>
+            <p class="day-date"></p>
+            <h2 class="day-name"></h2>
+          </div>
+          <button class="day-add" type="button" aria-label="Add task">+</button>
+        </header>
+        <div class="day-summary">
+          <span class="day-count"></span>
+          <div class="day-progress"><span></span></div>
+        </div>
+        <div class="task-list"></div>
+        <p class="empty-state">A blank canvas.</p>
+      </article>
+    </template>
+
+    <template id="task-template">
+      <article class="task-tile">
+        <button class="task-check" type="button" aria-label="Mark task complete">
+          <span aria-hidden="true"></span>
+        </button>
+        <button class="task-content" type="button">
+          <span class="task-name"></span>
+          <span class="task-note"></span>
+          <span class="priority-pill"></span>
+        </button>
+      </article>
+    </template>
+
+    <script src="app.js"></script>
+  </body>
+</html>
