@@ -170,7 +170,7 @@ function render() {
       const priority = taskFragment.querySelector(".priority-pill");
       priority.textContent = task.priority;
       priority.dataset.priority = task.priority;
-      checkbox.addEventListener("click", () => toggleTask(task.id));
+      checkbox.addEventListener("click", () => toggleTask(task.id, checkbox));
       content.addEventListener("click", () => openDialog(dayIndex, task));
       card.querySelector(".task-list").append(taskFragment);
     });
@@ -226,7 +226,36 @@ function closeDialog() {
   activeTaskId = null;
 }
 
-function toggleTask(taskId) {
+function celebrateTask(origin) {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+  const { left, top, width, height } = origin.getBoundingClientRect();
+  const celebration = document.createElement("span");
+  celebration.className = "spark-burst";
+  celebration.style.left = `${left + width / 2}px`;
+  celebration.style.top = `${top + height / 2}px`;
+  celebration.setAttribute("aria-hidden", "true");
+
+  const colors = ["#49735f", "#e7b95d", "#e98576", "#89a990"];
+  for (let index = 0; index < 12; index += 1) {
+    const spark = document.createElement("span");
+    const angle = (Math.PI * 2 * index) / 12;
+    const distance = 24 + (index % 3) * 9;
+    spark.className = "spark";
+    spark.style.setProperty("--spark-x", `${Math.cos(angle) * distance}px`);
+    spark.style.setProperty("--spark-y", `${Math.sin(angle) * distance}px`);
+    spark.style.setProperty("--spark-color", colors[index % colors.length]);
+    spark.style.setProperty("--spark-delay", `${(index % 4) * 18}ms`);
+    celebration.append(spark);
+  }
+
+  document.body.append(celebration);
+  celebration.addEventListener("animationend", () => celebration.remove(), { once: true });
+}
+
+function toggleTask(taskId, origin) {
+  const willComplete = !getTasks().find((task) => task.id === taskId)?.complete;
+  if (willComplete) celebrateTask(origin);
   updateActiveTasks((tasks) => tasks.map((task) =>
     task.id === taskId ? { ...task, complete: !task.complete } : task,
   ));
