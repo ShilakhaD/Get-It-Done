@@ -1,4 +1,5 @@
-const STORAGE_KEY = "weekflow-roadmap-v1";
+const STORAGE_KEY = "weekflow-roadmap-v2";
+const LEGACY_STORAGE_KEY = "weekflow-roadmap-v1";
 const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 const grid = document.querySelector("#roadmap-grid");
 const dialog = document.querySelector("#task-dialog");
@@ -8,9 +9,12 @@ const dayInput = document.querySelector("#task-day");
 const priorityInput = document.querySelector("#task-priority");
 const noteInput = document.querySelector("#task-note");
 const deleteButton = document.querySelector("#delete-task");
+const modeDialog = document.querySelector("#mode-dialog");
+const modeForm = document.querySelector("#mode-form");
+const modeNameInput = document.querySelector("#mode-name");
 let activeTaskId = null;
 
-const starterTasks = [
+const workStarterTasks = [
   {
     id: crypto.randomUUID(),
     day: 0,
@@ -37,21 +41,65 @@ const starterTasks = [
   },
 ];
 
-let tasks = loadTasks();
+const familyStarterTasks = [
+  {
+    id: crypto.randomUUID(),
+    day: 1,
+    name: "Plan one unrushed family dinner",
+    note: "A small anchor for the week.",
+    priority: "medium",
+    complete: false,
+  },
+  {
+    id: crypto.randomUUID(),
+    day: 5,
+    name: "Make space for something fun",
+    note: "",
+    priority: "low",
+    complete: false,
+  },
+];
 
-function loadTasks() {
+let roadmap = loadRoadmap();
+
+function createDefaultRoadmap(legacyTasks = null) {
+  return {
+    activeModeId: "work",
+    modes: [
+      { id: "work", name: "Work", tasks: legacyTasks ?? workStarterTasks },
+      { id: "family", name: "Family", tasks: familyStarterTasks },
+    ],
+  };
+}
+
+function loadRoadmap() {
   const saved = localStorage.getItem(STORAGE_KEY);
-  if (!saved) return starterTasks;
-
   try {
-    return JSON.parse(saved);
+    if (saved) return JSON.parse(saved);
+    const legacyTasks = JSON.parse(localStorage.getItem(LEGACY_STORAGE_KEY));
+    return createDefaultRoadmap(Array.isArray(legacyTasks) ? legacyTasks : null);
   } catch {
-    return starterTasks;
+    return createDefaultRoadmap();
   }
 }
 
-function saveTasks() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+function saveRoadmap() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(roadmap));
+}
+
+function getActiveMode() {
+  return roadmap.modes.find((mode) => mode.id === roadmap.activeModeId) ?? roadmap.modes[0];
+}
+
+function getTasks() {
+  return getActiveMode().tasks;
+}
+
+function updateActiveTasks(updater) {
+  roadmap.modes = roadmap.modes.map((mode) =>
+    mode.id === roadmap.activeModeId ? { ...mode, tasks: updater(mode.tasks) } : mode,
+  );
+  saveRoadmap();
 }
 
 function getWeekDates() {
@@ -87,6 +135,7 @@ function getCompletion(items) {
 }
 
 function render() {
+  renderModes();
   const dates = getWeekDates();
   const dayTemplate = document.querySelector("#day-card-template");
   const taskTemplate = document.querySelector("#task-template");
@@ -96,7 +145,7 @@ function render() {
   days.forEach((day, dayIndex) => {
     const fragment = dayTemplate.content.cloneNode(true);
     const card = fragment.querySelector(".day-card");
-    const dayTasks = tasks.filter((task) => task.day === dayIndex);
+    const dayTasks = getTasks().filter((task) => task.day === dayIndex);
     const completion = getCompletion(dayTasks);
     card.querySelector(".day-date").textContent = dates[dayIndex].toLocaleDateString("en-US", {
       month: "short",
@@ -129,10 +178,34 @@ function render() {
     grid.append(fragment);
   });
 
-  const weeklyCompletion = getCompletion(tasks);
+  const weeklyCompletion = getCompletion(getTasks());
+  document.querySelector("#overview-title").textContent = `${getActiveMode().name} roadmap`;
   document.querySelector("#weekly-count").textContent =
     `${weeklyCompletion.completed} of ${weeklyCompletion.total}`;
   document.querySelector("#weekly-progress").style.width = `${weeklyCompletion.percentage}%`;
+}
+
+function renderModes() {
+  const modeList = document.querySelector("#mode-list");
+  const modeTemplate = document.querySelector("#mode-template");
+  modeList.replaceChildren();
+  roadmap.modes.forEach((mode) => {
+    const fragment = modeTemplate.content.cloneNode(true);
+    const card = fragment.querySelector(".mode-card");
+    const completion = getCompletion(mode.tasks);
+    card.classList.toggle("is-active", mode.id === roadmap.activeModeId);
+    card.setAttribute("aria-pressed", String(mode.id === roadmap.activeModeId));
+    card.querySelector(".mode-icon").textContent = mode.name.charAt(0).toUpperCase();
+    card.querySelector(".mode-name").textContent = mode.name;
+    card.querySelector(".mode-count").textContent = `${completion.completed}/${completion.total} complete`;
+    card.querySelector(".mode-progress span").style.width = `${completion.percentage}%`;
+    card.addEventListener("click", () => {
+      roadmap.activeModeId = mode.id;
+      saveRoadmap();
+      render();
+    });
+    modeList.append(fragment);
+  });
 }
 
 function openDialog(dayIndex = 0, task = null) {
@@ -154,16 +227,14 @@ function closeDialog() {
 }
 
 function toggleTask(taskId) {
-  tasks = tasks.map((task) =>
+  updateActiveTasks((tasks) => tasks.map((task) =>
     task.id === taskId ? { ...task, complete: !task.complete } : task,
-  );
-  saveTasks();
+  ));
   render();
 }
 
 function deleteTask() {
-  tasks = tasks.filter((task) => task.id !== activeTaskId);
-  saveTasks();
+  updateActiveTasks((tasks) => tasks.filter((task) => task.id !== activeTaskId));
   closeDialog();
   render();
 }
@@ -184,13 +255,14 @@ form.addEventListener("submit", (event) => {
     priority: priorityInput.value,
     note: noteInput.value.trim(),
     complete: activeTaskId
-      ? tasks.find((item) => item.id === activeTaskId)?.complete ?? false
+      ? getTasks().find((item) => item.id === activeTaskId)?.complete ?? false
       : false,
   };
-  tasks = activeTaskId
-    ? tasks.map((item) => (item.id === activeTaskId ? task : item))
-    : [...tasks, task];
-  saveTasks();
+  updateActiveTasks((tasks) =>
+    activeTaskId
+      ? tasks.map((item) => (item.id === activeTaskId ? task : item))
+      : [...tasks, task],
+  );
   closeDialog();
   render();
 });
@@ -200,10 +272,28 @@ document.querySelector("#close-dialog").addEventListener("click", closeDialog);
 document.querySelector("#cancel-task").addEventListener("click", closeDialog);
 deleteButton.addEventListener("click", deleteTask);
 document.querySelector("#reset-week").addEventListener("click", () => {
-  if (!window.confirm("Reset your roadmap to the starter tasks?")) return;
-  tasks = starterTasks.map((task) => ({ ...task, id: crypto.randomUUID() }));
-  saveTasks();
+  if (!window.confirm(`Reset your ${getActiveMode().name} roadmap to an empty week?`)) return;
+  updateActiveTasks(() => []);
   render();
 });
 
+document.querySelector("#add-mode").addEventListener("click", () => {
+  modeDialog.showModal();
+  modeNameInput.focus();
+});
+document.querySelector("#close-mode-dialog").addEventListener("click", () => modeDialog.close());
+document.querySelector("#cancel-mode").addEventListener("click", () => modeDialog.close());
+modeForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+  const name = modeNameInput.value.trim();
+  const newMode = { id: crypto.randomUUID(), name, tasks: [] };
+  roadmap.modes.push(newMode);
+  roadmap.activeModeId = newMode.id;
+  saveRoadmap();
+  modeDialog.close();
+  modeForm.reset();
+  render();
+});
+
+saveRoadmap();
 render();

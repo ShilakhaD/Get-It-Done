@@ -5,6 +5,8 @@ A tile-based weekly roadmap for planning and tracking tasks across the week.
 ## Features
 
 - Seven-day tile layout with per-day progress
+- Work and Family modes with separate roadmaps
+- Custom modes for other life areas
 - Add, edit, complete, and delete tasks
 - Priority labels and optional notes
 - Weekly progress summary

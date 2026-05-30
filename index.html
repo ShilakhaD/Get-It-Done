@@ -34,6 +34,19 @@
         </div>
       </header>
 
+      <section class="mode-section" aria-labelledby="mode-title">
+        <div class="mode-heading">
+          <div>
+            <p class="section-label" id="mode-title">Life areas</p>
+            <p class="mode-intro">Give each part of your week the attention it deserves.</p>
+          </div>
+          <button class="button button-secondary" id="add-mode" type="button">
+            <span aria-hidden="true">+</span> Add mode
+          </button>
+        </div>
+        <div class="mode-list" id="mode-list" aria-label="Roadmap modes"></div>
+      </section>
+
       <section class="week-overview" aria-labelledby="overview-title">
         <div>
           <p class="section-label" id="overview-title">This week</p>
@@ -107,6 +120,46 @@
         </div>
       </form>
     </dialog>
+
+    <dialog class="task-dialog mode-dialog" id="mode-dialog">
+      <form method="dialog" id="mode-form">
+        <div class="dialog-heading">
+          <div>
+            <p class="eyebrow">A new life area</p>
+            <h2>Add a mode</h2>
+          </div>
+          <button class="icon-button" id="close-mode-dialog" type="button" aria-label="Close">
+            &times;
+          </button>
+        </div>
+        <label>
+          Mode name
+          <input
+            id="mode-name"
+            name="name"
+            type="text"
+            maxlength="24"
+            placeholder="Health, learning, personal..."
+            required
+          />
+        </label>
+        <div class="dialog-actions mode-dialog-actions">
+          <button class="button button-secondary" id="cancel-mode" type="button">Cancel</button>
+          <button class="button button-primary" type="submit">Create mode</button>
+        </div>
+      </form>
+    </dialog>
+
+    <template id="mode-template">
+      <button class="mode-card" type="button">
+        <span class="mode-icon" aria-hidden="true"></span>
+        <span class="mode-copy">
+          <strong class="mode-name"></strong>
+          <span class="mode-count"></span>
+        </span>
+        <span class="mode-progress"><span></span></span>
+      </button>
+    </template>
 
     <template id="day-card-template">
       <article class="day-card">

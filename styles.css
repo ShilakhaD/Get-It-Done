@@ -43,6 +43,7 @@ button {
 
 .app-header,
 .week-overview,
+.mode-heading,
 .day-heading,
 .day-summary,
 .dialog-heading,
@@ -120,8 +121,91 @@ h1 {
 }
 
 .week-overview {
-  margin: 48px 0 18px;
+  margin: 34px 0 18px;
   padding: 0 2px;
+}
+
+.mode-section {
+  margin-top: 42px;
+}
+
+.mode-intro {
+  margin: 7px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.mode-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(176px, 220px));
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.mode-card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: 15px;
+  padding: 13px;
+  color: var(--ink);
+  text-align: left;
+  background: rgb(255 255 255 / 65%);
+  transition: 160ms ease;
+}
+
+.mode-card:hover {
+  border-color: #c8d9cd;
+  transform: translateY(-2px);
+}
+
+.mode-card.is-active {
+  border-color: #a9c4b2;
+  background: #f7fbf6;
+  box-shadow: var(--shadow);
+}
+
+.mode-icon {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border-radius: 10px;
+  color: var(--green-dark);
+  background: var(--soft-green);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.mode-copy {
+  display: grid;
+  gap: 3px;
+}
+
+.mode-name {
+  font-size: 14px;
+}
+
+.mode-count {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.mode-progress {
+  grid-column: 1 / -1;
+  overflow: hidden;
+  height: 4px;
+  border-radius: 999px;
+  background: #e6ebe7;
+}
+
+.mode-progress span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--green);
 }
 
 .week-range {
@@ -422,6 +506,10 @@ textarea {
   margin-top: 24px;
 }
 
+.mode-dialog-actions {
+  justify-content: flex-end;
+}
+
 .is-hidden {
   visibility: hidden;
 }
@@ -439,7 +527,8 @@ textarea {
   }
 
   .app-header,
-  .week-overview {
+  .week-overview,
+  .mode-heading {
     align-items: flex-start;
     flex-direction: column;
   }
@@ -455,6 +544,10 @@ textarea {
 
   .week-overview {
     margin-top: 35px;
+  }
+
+  .mode-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .roadmap-grid {
